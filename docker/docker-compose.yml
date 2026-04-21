@@ -1,6 +1,8 @@
 services:
   sandbox:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     image: recall:latest
     runtime: nvidia
     environment:
@@ -8,12 +10,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/workspace/ReCall
+      - ..:/workspace/ReCall
     command: python scripts/serving/sandbox.py --port 8000
     restart: unless-stopped
 
   retriever:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     image: recall:latest
     runtime: nvidia
     environment:
@@ -21,8 +25,8 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - .:/workspace/ReCall
-      - ${RETRIEVER_DATA_DIR:-./data}:/retriever_data
+      - ..:/workspace/ReCall
+      - ${RETRIEVER_DATA_DIR:-../data}:/retriever_data
     command: >
       python scripts/serving/retriever_serving.py
       --config scripts/serving/retriever_config.yaml
@@ -31,17 +35,19 @@ services:
     restart: unless-stopped
 
   train:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     image: recall:latest
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
       - WANDB_API_KEY=${WANDB_API_KEY}
     volumes:
-      - .:/workspace/ReCall
-      - ${MODEL_DIR:-./models}:/models
-      - ${DATA_DIR:-./data}:/data
-      - ${SAVE_DIR:-./checkpoints}:/checkpoints
+      - ..:/workspace/ReCall
+      - ${MODEL_DIR:-../models}:/models
+      - ${DATA_DIR:-../data}:/data
+      - ${SAVE_DIR:-../checkpoints}:/checkpoints
     working_dir: /workspace/ReCall/scripts/train
     profiles:
       - train
